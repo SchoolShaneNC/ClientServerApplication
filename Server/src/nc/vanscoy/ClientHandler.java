@@ -56,7 +56,7 @@ public class ClientHandler implements Runnable {
 				{
 				    String message = obj.toString();
 
-				    // Private Message
+				    //all private messages start with PRIVATE: that dictates it
 				    if(message.startsWith("PRIVATE:"))
 				    {
 				        String[] parts = message.split(":", 3);
@@ -70,11 +70,11 @@ public class ClientHandler implements Runnable {
 				            {
 				                if(client.getHandle().equals(targetHandle))
 				                {
-				                    // Send to recipient
+				                    //send to recipient
 				                    client.out.writeObject("[Private from " + handle + "] " + privateMessage);
 				                    client.out.flush();
 
-				                    // Send a copy back to sender
+				                    //send a copy back to sender
 				                    out.writeObject("[Private to " + targetHandle + "] " + privateMessage);
 				                    out.flush();
 
@@ -85,7 +85,7 @@ public class ClientHandler implements Runnable {
 				    }
 				    else
 				    {
-				        // Normal public message
+				        //the regular messages
 				        TCPServer.messages.add(
 				                handle + ": " + message);
 				    }

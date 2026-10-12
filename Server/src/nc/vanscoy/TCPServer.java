@@ -40,8 +40,14 @@ public class TCPServer extends JFrame implements Runnable, WindowListener {
 	//any class in the same package (or with appropriate access) can reference them
 	//easy access without needing getters/setters
 	static JTextArea output = new JTextArea("Ready...\n");
-	static List<ClientHandler> clientHandlers = new ArrayList<ClientHandler>();
-	static List<String> messages = new ArrayList<String>();
+	
+	//static List<ClientHandler> clientHandlers = new ArrayList<ClientHandler>();
+	//static List<String> messages = new ArrayList<String>();
+	
+	//more thread safe from the 2 lines above / if one thread is modifying list it will put a lock
+	//on it so they wont be modified by 2 threads at the same time
+	static List<ClientHandler> clientHandlers = Collections.synchronizedList(new ArrayList<ClientHandler>());
+	static List<String> messages = Collections.synchronizedList(new ArrayList<String>());
 	//all instances of the server share these lists because they are listed as static
 	
 	public	TCPServer() {
@@ -139,19 +145,32 @@ public class TCPServer extends JFrame implements Runnable, WindowListener {
 			while(go) {//as long as server is running will run
 				//allow other threads to run
 				//this thread will 'step aside' for others
-				Thread.yield();
-				//check for clients and messages
-				if(messages.size() > 0 && clientHandlers.size() > 0) {
-					String msg = messages.get(0);
-					for(int x=0;x<clientHandlers.size();x++)
-						try {
-							clientHandlers.get(x).out.writeObject(msg);
-						} catch (IOException e) {
-							output.append("Error writing to client...\n");
-							clientHandlers.remove(x);//remove non responsive clients
-						}
-					messages.remove(0);
+				//Thread.yield();
+				while(go)
+				{
+				    try
+				    {
+				    	//instead of having it yield all the time it sleeps for 25 miliseconds 
+				    	//keeps thread very responsive and takes way less performance
+				        Thread.sleep(25);
+				    }
+				    catch(InterruptedException e)
+				    {
+				    }
+					//check for clients and messages
+					if(messages.size() > 0 && clientHandlers.size() > 0) {
+						String msg = messages.get(0);
+						for(int x=0;x<clientHandlers.size();x++)
+							try {
+								clientHandlers.get(x).out.writeObject(msg);
+							} catch (IOException e) {
+								output.append("Error writing to client...\n");
+								clientHandlers.remove(x);//remove non responsive clients
+							}
+						messages.remove(0);
+					}
 				}
+			
 			}
 		}
 	}

@@ -143,12 +143,12 @@ public class TCPClient extends JFrame implements WindowListener
 						}
 						else
 						{			
-							//	out.writeObject(name + ": " + input.getText());
 							out.writeObject(input.getText());
 							out.flush();
 						}
 						input.setText("");
 						input.requestFocus();
+						userList.clearSelection();
 			
 					}
 					catch(IOException e1)
