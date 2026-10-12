@@ -69,7 +69,7 @@ public class TCPServer extends JFrame implements Runnable, WindowListener {
 	public void run() {
 		try {
 			//construct the server
-			server = new ServerSocket(8000);
+			server = new ServerSocket(7000);
 			//start additional server threads
 			go = true;
 			new BroadCast().start();
@@ -95,6 +95,25 @@ public class TCPServer extends JFrame implements Runnable, WindowListener {
 			}
 		}
 		output.append("Server is no longer accepting clients...\n");
+	}
+
+	public static void UpdateUserList() {
+		StringBuilder users = new StringBuilder("USERS:");
+		for(int x = 0; x < clientHandlers.size(); x++) {
+			if(x > 0) {
+				users.append(",");
+			}
+			users.append(clientHandlers.get(x).getHandle());
+		}
+
+		for(ClientHandler handler : clientHandlers) {
+			try {
+				handler.out.writeObject(users.toString());
+				handler.out.flush();
+			} catch(IOException e) {
+				output.append("Unable to update a client user list...\n");
+			}
+		}
 	}
 
 	//a server thread to broadcast text messages to all connected clients

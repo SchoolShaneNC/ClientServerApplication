@@ -18,20 +18,31 @@ public class ClientHandler implements Runnable {
 	ObjectInputStream in = null;
 	ObjectOutputStream out = null;
 	boolean go = false;
+	private String handle;
 
 	public ClientHandler(Socket socket) {
 		try {
 			//create IO streams
 			this.out = new ObjectOutputStream(socket.getOutputStream());
 			this.in = new ObjectInputStream(socket.getInputStream());
+			//The first object sent by a client is its validated handle.
+			Object initialObject = this.in.readObject();
+			if(initialObject instanceof String) {
+				this.handle = initialObject.toString();
+			}
 			//add client to the server's client list
 			TCPServer.clientHandlers.add(this);
+			TCPServer.UpdateUserList();
 			TCPServer.output.append("Client " + TCPServer.clientHandlers.size() + " connected...\n");
 			//start a thread to read incoming client messages
 			this.go = true;
 			Thread thread = new Thread(this);
 			thread.start();
-		} catch (IOException e) {}
+		} catch (IOException | ClassNotFoundException e) {}
+	}
+
+	public String getHandle() {
+		return handle;
 	}
 	
 	@Override
@@ -48,6 +59,8 @@ public class ClientHandler implements Runnable {
 			} catch (Exception e) {
 				//remove from the client list if streams are broken
 				TCPServer.clientHandlers.remove(this);
+				go = false;
+				TCPServer.UpdateUserList();
 			} 
 		}
 	}
