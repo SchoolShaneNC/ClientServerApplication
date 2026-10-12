@@ -13,8 +13,6 @@ import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 
-
-
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -23,8 +21,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 
 import javax.swing.*;
 
@@ -60,7 +56,7 @@ public class TCPClient extends JFrame implements WindowListener
 
 	//user list
 	private DefaultListModel<String> userListModel = new DefaultListModel<>();
-	private JList<String> lstUsers = new JList<>(userListModel);
+	private JList<String> userList = new JList<>(userListModel);
 
 	//chat components
 	private JTextArea output = new JTextArea("Ready...\n");
@@ -84,7 +80,7 @@ public class TCPClient extends JFrame implements WindowListener
 		JPanel usersPanel = new JPanel(new BorderLayout());
 		usersPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		usersPanel.add(new JLabel("Connected Users"), BorderLayout.NORTH);
-		JScrollPane usersScroll = new JScrollPane(lstUsers);
+		JScrollPane usersScroll = new JScrollPane(userList);
 		usersScroll.setPreferredSize(new Dimension(150, 0));
 		usersPanel.add(usersScroll, BorderLayout.CENTER);
 
@@ -140,11 +136,20 @@ public class TCPClient extends JFrame implements WindowListener
 				{
 					try
 					{
-						out.writeObject(name + ": " + input.getText());
-						out.flush();
-
+						String user = userList.getSelectedValue();
+						if (user != null)
+						{
+							out.writeObject("PRIVATE:" + user + ":" + input.getText());							out.flush();
+						}
+						else
+						{			
+							//	out.writeObject(name + ": " + input.getText());
+							out.writeObject(input.getText());
+							out.flush();
+						}
 						input.setText("");
 						input.requestFocus();
+			
 					}
 					catch(IOException e1)
 					{

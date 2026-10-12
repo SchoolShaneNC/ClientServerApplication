@@ -52,8 +52,43 @@ public class ClientHandler implements Runnable {
 				//wait until a message comes from the client
 				Object obj = in.readObject();
 				//add valid message to the queue
-				if(obj instanceof String) {
-					TCPServer.messages.add(obj.toString());
+				if(obj instanceof String)
+				{
+				    String message = obj.toString();
+
+				    // Private Message
+				    if(message.startsWith("PRIVATE:"))
+				    {
+				        String[] parts = message.split(":", 3);
+
+				        if(parts.length == 3)
+				        {
+				            String targetHandle = parts[1];
+				            String privateMessage = parts[2];
+
+				            for(ClientHandler client : TCPServer.clientHandlers)
+				            {
+				                if(client.getHandle().equals(targetHandle))
+				                {
+				                    // Send to recipient
+				                    client.out.writeObject("[Private from " + handle + "] " + privateMessage);
+				                    client.out.flush();
+
+				                    // Send a copy back to sender
+				                    out.writeObject("[Private to " + targetHandle + "] " + privateMessage);
+				                    out.flush();
+
+				                    break;
+				                }
+				            }
+				        }
+				    }
+				    else
+				    {
+				        // Normal public message
+				        TCPServer.messages.add(
+				                handle + ": " + message);
+				    }
 				}
 				
 			} catch (Exception e) {
